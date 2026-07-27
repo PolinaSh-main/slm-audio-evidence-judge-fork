@@ -1,0 +1,13 @@
+qid,id,decision,gold_answer,reason
+572a0b101d046914007796eb,sc-nat-572a0b101d046914007796eb,drop,Brazilian National Institute of Amazonian Research,answer starts at the end of 30s audio and is cut off
+5726a299dd62a815002e8b9f,sc-nat-5726a299dd62a815002e8b9f,drop,member states,gold answer is not audible in the 30s audio
+57337f6ad058e614000b5bcd,sc-nat-57337f6ad058e614000b5bcd,drop,1951,gold answer is not audible in the 30s audio
+5705eee952bb8914006896e0,sc-nat-5705eee952bb8914006896e0,keep,Monterey,ASR distortion: Monterey -> Ontario
+571095a8a58dae1900cd6a78,sc-nat-571095a8a58dae1900cd6a78,keep,France Antarctique,ASR distortion: France Antarctique -> articule
+5710e9f8a58dae1900cd6b31,sc-nat-5710e9f8a58dae1900cd6b31,keep,Jean Ribault,ASR distortion: Jean Ribault -> Rebolt
+572885c44b864d1900164a7a,sc-nat-572885c44b864d1900164a7a,keep,Khanbaliq,ASR distortion: Khanbaliq -> Can Balik
+572fe9b3947a6a140053cde1,sc-nat-572fe9b3947a6a140053cde1,keep,Aare,ASR distortion: Aare -> Arriff
+572ff07304bcaa1900d76ef7,sc-nat-572ff07304bcaa1900d76ef7,keep,Moselle,ASR distortion: Moselle -> Mustel
+5733647e4776f419006609af,sc-nat-5733647e4776f419006609af,keep,Pawiak,ASR distortion: Pawiak -> Pavek
+573010fab2c2fd14005687d9,sc-nat-573010fab2c2fd14005687d9,keep,domestic Islamists,"gold answer is audible, but Whisper missed the second spoken sentence"
+5726a46cdd62a815002e8bd2,sc-nat-5726a46cdd62a815002e8bd2,drop,"the ""Social Chapter""",fuzzy ASR match may be false: Social Charter vs Social Chapter; requires manual listening

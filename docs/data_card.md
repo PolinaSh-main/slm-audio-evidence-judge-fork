@@ -90,6 +90,21 @@ Filter logs:
 - Small dataset size: 40 passages and 100 final verified items.
 - Generated B/C questions passed one round of non-author verification; disputed items were dropped rather than adjudicated (deadline constraint).
 - Inter-annotator agreement on shared calibration items: 80% (16/20).
+- **Qwen2-Audio's 30-second window.** All 40 pilot passages run 31–55 s (median 43 s), while Qwen2-Audio processes only the first 30 s of a recording (`chunk_length=30`); the cascade, by contrast, receives the full Whisper transcript. Retroactive check (2026-07-22): of the 24 category-A items whose gold answer appears verbatim in the transcript, only **1 (4%)** falls beyond the audible 30 s — so in 96% of cases the answer was available to the model and the pilot conclusions hold. No equivalent check is possible for category B, since B answers are by definition not verbatim; this remains a residual risk. The 30-second limit is architectural, not a pipeline choice: the audio encoder has `max_source_positions=1500` (= 3000 mel frames = 30 s), a fixed property of Whisper-class encoders that cannot be lifted without re-training. Sets built after this date are aligned to the 30-second boundary (see `docs/decisions.md`, 2026-07-22).
+
+## Scale Set (in preparation, 2026-07-22)
+
+A second, larger set complements the pilot; the pilot itself stays frozen as the diagnostic set.
+
+| Property | Value |
+|---|---|
+| Manifest | `data/manifests/scale_nmsqa.jsonl` (+ `scale_tts_twin.jsonl` for the twin subset) |
+| Audio | NMSQA test — SQuAD paragraphs read by human speakers: 48 paragraphs, 51 files, 40 speakers |
+| Questions | Native SQuAD 2.0: 267 answerable (A) + 235 unanswerable (C), no LLM generation |
+| Categories | A and C only — SQuAD has no native B, and generating B would sacrifice the set's nativeness |
+| Schema | Same as the pilot, with `source: "nmsqa"`, `generator: "native-squad2"`, C `subtype: "native-unanswerable"` |
+| Verification | Spot-check of 30 rows (audio matches paragraph text); the questions themselves are crowdsourced by the SQuAD authors |
+| Twin subset | 26 paragraphs that also have our TTS audio — supports a controlled "TTS vs natural speech" comparison on identical questions |
 
 ## How To Add a Compatible Item
 

@@ -1,0 +1,148 @@
+{
+  "parameters": {
+    "ignore_pool": true,
+    "audio_dir": "data\\raw\\nmsqa_squad_test"
+  },
+  "pool": {
+    "data_csv_contexts": 1033,
+    "matched_squad2_contexts": 608,
+    "A": 2984,
+    "C": 2967
+  },
+  "nmsqa_squad2": {
+    "contexts": 48,
+    "audio_files": 51,
+    "speakers": 40,
+    "A": 267,
+    "C": 235
+  },
+  "selected_overlap": {
+    "pool_filter": false,
+    "contexts": 48,
+    "audio_files": 51,
+    "speakers": 40,
+    "A": 267,
+    "C": 235
+  },
+  "matching_audit": {
+    "nmsqa_test_rows": 171,
+    "nmsqa_test_contexts": 105,
+    "nmsqa_test_audio_files": 171,
+    "nmsqa_test_speakers": 60,
+    "source_breakdown": {
+      "squad": {
+        "contexts": 48,
+        "audio_files": 51,
+        "speakers": 40
+      },
+      "newsqa": {
+        "contexts": 43,
+        "audio_files": 104,
+        "speakers": 60
+      },
+      "quac": {
+        "contexts": 14,
+        "audio_files": 16,
+        "speakers": 14
+      }
+    },
+    "exact_dev_contexts": 48,
+    "exact_train_only_contexts": 0,
+    "unmatched_after_dev_and_train": 57,
+    "fuzzy_95_matches_after_dev_and_train": 0,
+    "unmatched_examples": [
+      {
+        "source": "newsqa",
+        "context_prefix": "-LRB- CNN -RRB- -- A ferry crammed with people capsized late Friday night in Bangladesh , killing at least 28 passengers , police said . The boat had a capacity of 1,500 , but was overcrowded with abo"
+      },
+      {
+        "source": "newsqa",
+        "context_prefix": "-LRB- CNN -RRB- -- A man who rescued a co-worker from the jaws of a crocodile in northern Australia also accidentally shot him in the process , police said . A mature saltwater crocodile in the the mu"
+      },
+      {
+        "source": "newsqa",
+        "context_prefix": "-LRB- CNN -RRB- -- A manhunt is under way in New Jersey as multiple law enforcement agencies search for Arthur E. Morgan III , who is wanted for questioning in the death of a two-year-old girl , autho"
+      },
+      {
+        "source": "newsqa",
+        "context_prefix": "-LRB- CNN -RRB- -- A passenger plane skidded off an airport runway and burst into flames in the northeastern Iranian city of Mashhad on Friday , killing at least 17 people and injuring about 20 , acco"
+      },
+      {
+        "source": "newsqa",
+        "context_prefix": "-LRB- CNN -RRB- -- After several delays , NASA said Friday that space shuttle Discovery is scheduled for launch in five days . The space shuttle Discovery , seen here in January , is now scheduled to "
+      }
+    ],
+    "normalization": {
+      "data_csv": {
+        "unique_original_contexts": 1033,
+        "unique_normalized_keys": 1033,
+        "collision_keys": 0,
+        "passed": true
+      },
+      "nmsqa_test": {
+        "unique_original_contexts": 105,
+        "unique_normalized_keys": 105,
+        "collision_keys": 0,
+        "passed": true
+      },
+      "squad2_dev": {
+        "unique_original_contexts": 1204,
+        "unique_normalized_keys": 1204,
+        "collision_keys": 0,
+        "passed": true
+      },
+      "squad2_train": {
+        "unique_original_contexts": 19029,
+        "unique_normalized_keys": 19029,
+        "collision_keys": 0,
+        "passed": true
+      }
+    },
+    "train_only_A": 0,
+    "train_only_C": 0
+  },
+  "duration_audit": {
+    "status": "complete",
+    "expected_files": 51,
+    "found_files": 51,
+    "distribution_seconds": {
+      "min": 24.985,
+      "p25": 49.18,
+      "median": 66.502,
+      "mean": 69.731,
+      "p75": 83.685,
+      "p90": 101.425,
+      "max": 156.038
+    },
+    "bins": {
+      "under_10": 0,
+      "10_to_20": 0,
+      "20_to_30": 1,
+      "30_to_45": 7,
+      "45_to_60": 12,
+      "60_plus": 31
+    },
+    "short_files_under_10_seconds": [],
+    "kept_files": 51,
+    "histogram": "data\\nmsqa_duration_histogram.png"
+  },
+  "duration_filtered_overlap": {
+    "status": "complete",
+    "minimum_duration_seconds": 10,
+    "kept_audio_files": 51,
+    "removed_audio_files": 0,
+    "kept_contexts": 48,
+    "removed_contexts": 0,
+    "kept_A": 267,
+    "kept_C": 235,
+    "removed_A": 0,
+    "removed_C": 0
+  },
+  "natural_nmsqa_slice": {
+    "contexts": 26,
+    "audio_files": 27,
+    "speakers": 24,
+    "A": 151,
+    "C": 126
+  }
+}

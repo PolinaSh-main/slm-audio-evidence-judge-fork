@@ -9,7 +9,7 @@
 - Проблема: когда в записи нет ответа, модели его выдумывают. Аудио: «я люблю яблоки». Вопрос: «какого цвета была куртка?» Модель: «синяя» — это **галлюцинация**.
 - Мы строим тестовый набор с тремя видами вопросов: **A** ответ произнесён · **B** ответ выводится · **C** ответа в аудио нет вообще (модель должна так и сказать).
 - Мы измеряем, как часто модели галлюцинируют на C, и сравниваем исправления против цены избыточных отказов. Вердикт пилота: узкое место — *эпистемическое рассуждение, а не слух* (таблица ниже).
-- Сейчас фаза статьи: валидация масштабом на нативных безответных вопросах SQuAD 2.0 (аудио Spoken-SQuAD + натуральная речь NMSQA) + новая митигация — перенос *pre-generation пробинга* на Qwen2-Audio ([docs/ru/PLAN.md](docs/ru/PLAN.md)); план-минимум защищён чекпоинтом 24.07.
+- Сейчас фаза статьи: валидация масштабом на нативных безответных вопросах SQuAD 2.0, начитанных живыми дикторами (NMSQA, 48 пассажей / 40 дикторов) + новая митигация — перенос *pre-generation пробинга* на Qwen2-Audio ([docs/ru/PLAN.md](docs/ru/PLAN.md)); план-минимум защищён чекпоинтом 24.07.
 
 ## Где что искать — 3 файла на человека
 
@@ -128,7 +128,7 @@ python data/generation/tts_fallback.py --text "Your passage text here" --out dat
 
 ```bash
 pip install -r requirements.txt
-# инференс (нужен GPU; ноутбук notebooks/colab_run.ipynb работает на DataSphere/Colab, notebooks/kaggle_run.ipynb — запасной вариант на Kaggle):
+# инференс (нужен GPU; ноутбук notebooks/colab_run.ipynb работает на DataSphere/Colab):
 python -m src.inference --model qwen2audio --strategy plain --data data/manifests/pilot.jsonl --out results/
 # оценка:
 python -m src.run_eval --responses results/<run_id>/responses.jsonl
@@ -144,6 +144,84 @@ python -m src.run_eval --responses results/<run_id>/responses.jsonl
 | Cascade · S1 IDK | **2.5%** | **97.5%** | 87% | 83% | 7% |
 
 Одна инструкция «скажи, если в аудио этого нет» снижает галлюцинации 92.5%→17.5% у Speech LLM, но ценой 62% избыточных отказов; каскад берёт ту же инструкцию почти бесплатно — узкое место в эпистемическом рассуждении, а не в слухе. Детали, цитаты и происхождение оценок: [results/pilot_summary.md](results/pilot_summary.md).
+
+## После предзащиты: масштабная проверка NMSQA
+
+Всё выше относится к пилоту и пайплайну предзащиты. Этот отдельный этап
+проверяет вывод пилота на масштабе и на натуральной речи из NMSQA test.
+Скачать метаданные NMSQA test и SQuAD 2.0 и запустить первичный аудит
+матчинга:
+
+```bash
+python data/explore_nmsqa_overlap.py --ignore-pool
+```
+
+Официальный источник хранит все аудиосплиты в одном архиве размером 27,2 ГБ.
+Команда скачивает и распаковывает его в `data/raw/nmsqa/` (пока архив не
+удалён, нужно около 55–60 ГБ):
+
+```bash
+python data/download_nmsqa_audio.py
+```
+
+Выбрать 51 натуральную запись, чьи пассажи совпадают с SQuAD 2.0 dev,
+скопировать их в `data/raw/nmsqa_squad_test/` и проверить открываемость WAV:
+
+```bash
+python data/select_nmsqa_squad_audio.py
+```
+
+Объединить сегменты `c-0`, `c-1`, ... каждой записи по порядку:
+
+```bash
+python data/merge_nmsqa_squad_audio.py
+```
+
+Запустить аудит матчинга без фильтра `data.csv`: проверяются SQuAD train,
+fuzzy-совпадения, коллизии нормализации и длительности:
+
+```bash
+python data/explore_nmsqa_overlap.py --ignore-pool --audio-dir data/raw/nmsqa_squad_test
+```
+
+Применить ограничение 30 секунд и проверить покрытие категории A:
+
+```bash
+python data/trim_nmsqa_audio_30s.py
+```
+
+Собрать натуральный скейл-манифест:
+
+```bash
+python data/make_scale_manifest.py
+```
+
+Опционально собрать парный Spoken-SQuAD TTS-манифест:
+
+```bash
+python data/make_tts_twin_manifest.py
+```
+
+После четырёх scale-прогонов и появления `scale_nmsqa_responses_20260725.zip`
+проверить, что A-ответы слышны в 30-секундном аудио, через ASR-транскрипты
+cascade:
+
+```bash
+python data/check_scale_asr_answers.py
+python data/package_asr_suspects.py
+```
+
+Применить ручные решения по прослушке и заморозить финальный scale-датасет:
+
+```bash
+python data/apply_scale_a_review.py --drop-social-chapter --output data/manifests/scale_nmsqa_final.jsonl
+python data/freeze_scale_dataset.py
+```
+
+Метаданные кэшируются в `data/raw/nmsqa_overlap/`. Итог записывается в
+`data/nmsqa_overlap_report.json`, график длительностей — в
+`data/nmsqa_duration_histogram.png`. Для повторного скачивания метаданных
+добавь к последней команде `--force-download`.
 
 ## Правила работы
 - Каждое решение → [docs/decisions.md](docs/decisions.md); изменения схем данных объявляются там в тот же день. Канонические схемы: [docs/ru/PLAN.md §2](docs/ru/PLAN.md).

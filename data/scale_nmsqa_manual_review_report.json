@@ -1,0 +1,38 @@
+{
+  "inputs": {
+    "manifest": "data\\manifests\\scale_nmsqa.jsonl"
+  },
+  "outputs": {
+    "validated_manifest": "data\\manifests\\scale_nmsqa_final.jsonl",
+    "decisions_csv": "data\\scale_nmsqa_manual_review_decisions.csv"
+  },
+  "manual_review": {
+    "confirmed_drop_qids": [
+      "5726a299dd62a815002e8b9f",
+      "572a0b101d046914007796eb",
+      "57337f6ad058e614000b5bcd"
+    ],
+    "confirmed_keep_qids": [
+      "5705eee952bb8914006896e0",
+      "571095a8a58dae1900cd6a78",
+      "5710e9f8a58dae1900cd6b31",
+      "572885c44b864d1900164a7a",
+      "572fe9b3947a6a140053cde1",
+      "572ff07304bcaa1900d76ef7",
+      "573010fab2c2fd14005687d9",
+      "5733647e4776f419006609af"
+    ],
+    "social_chapter_qid": "5726a46cdd62a815002e8bd2",
+    "social_chapter_status": "drop"
+  },
+  "summary": {
+    "items_before": 380,
+    "A_before": 145,
+    "C_before": 235,
+    "items_after": 376,
+    "A_after": 141,
+    "C_after": 235,
+    "A_dropped": 4,
+    "C_dropped": 0
+  }
+}

@@ -96,6 +96,10 @@
 | Hugging Face (HF) | Public hub hosting models and datasets; `transformers` / `datasets` are its Python libraries |
 | JSONL | A text file where every line is one JSON record |
 | Manifest | The JSONL file listing all test items |
+| Diagnostic set | Pilot-100: small, hand-verified, with the full A/B/C categories and C1–C4 subtypes — used to analyse behaviour in detail |
+| Scale set | The large set used to test the findings at scale: native SQuAD 2.0 questions over NMSQA natural speech (~500 items, A and C only) |
+| Twin subset | The 26 paragraphs that have both a natural recording and our TTS version — enables a "TTS vs natural speech" comparison on identical questions |
+| 30-second window | Qwen2-Audio processes only the first 30 s of a recording (the rest is discarded), while the cascade sees the full transcript via Whisper; sets are aligned to this boundary, otherwise the systems get different inputs |
 | Schema | The agreed set of fields every record must have; never changed silently (canonical schemas: [PLAN.md](PLAN.md) §2) |
 | Gold answer / span | The reference correct answer / the exact substring of the transcript containing it |
 | Adversarial | Written specifically to fool the model — e.g., unanswerable questions that look answerable |

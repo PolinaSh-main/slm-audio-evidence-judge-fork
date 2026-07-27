@@ -9,7 +9,7 @@
 - Problem: when the recording does not contain the answer, models invent one. Audio: "I like apples." Question: "What color was the jacket?" Model: "Blue." — a **hallucination**.
 - We build a test set with three question kinds: **A** answer stated · **B** answer inferable · **C** not in the audio at all (the model should say so).
 - We measure how often models hallucinate on C and compare fixes against the cost of refusing too much. Pilot verdict: the bottleneck is *epistemic reasoning, not hearing* (see the table below).
-- Paper phase now: scale validation on native SQuAD 2.0 unanswerable questions (Spoken-SQuAD + NMSQA natural-speech audio) + a novel mitigation — *pre-generation probing* transferred to Qwen2-Audio ([docs/en/PLAN.md](docs/en/PLAN.md)); plan-minimum guarded by a Jul 24 checkpoint.
+- Paper phase now: scale validation on native SQuAD 2.0 unanswerable questions read by human speakers (NMSQA, 48 paragraphs / 40 speakers) + a novel mitigation — *pre-generation probing* transferred to Qwen2-Audio ([docs/en/PLAN.md](docs/en/PLAN.md)); plan-minimum guarded by a Jul 24 checkpoint.
 
 ## Where to look — 3 files per person
 
@@ -128,7 +128,7 @@ The output is WAV, 16 kHz, mono, 16-bit.
 
 ```bash
 pip install -r requirements.txt
-# inference (GPU; notebooks/colab_run.ipynb runs on DataSphere/Colab, notebooks/kaggle_run.ipynb is the Kaggle fallback):
+# inference (GPU; notebook notebooks/colab_run.ipynb runs on DataSphere/Colab):
 python -m src.inference --model qwen2audio --strategy plain --data data/manifests/pilot.jsonl --out results/
 # evaluation:
 python -m src.run_eval --responses results/<run_id>/responses.jsonl
@@ -144,6 +144,84 @@ python -m src.run_eval --responses results/<run_id>/responses.jsonl
 | Cascade · S1 IDK | **2.5%** | **97.5%** | 87% | 83% | 7% |
 
 One "I-don't-know" instruction cuts hallucination 92.5%→17.5% on the Speech LLM but costs 62% over-refusal; the cascade takes the same instruction almost for free — the bottleneck is epistemic reasoning, not hearing. Details, quotes, and grading provenance: [results/pilot_summary.md](results/pilot_summary.md).
+
+## After pre-defense: NMSQA scale validation
+
+Everything above documents the pilot and pre-defense pipeline. This separate
+phase checks the pilot finding at scale using human-read NMSQA test audio.
+Download the NMSQA test and SQuAD 2.0 metadata and run the initial matching
+audit:
+
+```bash
+python data/explore_nmsqa_overlap.py --ignore-pool
+```
+
+The official release bundles all audio splits in one 27.2 GB archive. The
+following command downloads and extracts it under `data/raw/nmsqa/` (about
+55–60 GB is needed while the archive is kept):
+
+```bash
+python data/download_nmsqa_audio.py
+```
+
+Select the 51 natural recordings whose passages match SQuAD 2.0 dev, copy them
+to `data/raw/nmsqa_squad_test/`, and verify that every WAV opens:
+
+```bash
+python data/select_nmsqa_squad_audio.py
+```
+
+Merge each recording's `c-0`, `c-1`, ... segments in order:
+
+```bash
+python data/merge_nmsqa_squad_audio.py
+```
+
+Run the unfiltered matching, train/fuzzy, normalization-collision, and duration
+audit:
+
+```bash
+python data/explore_nmsqa_overlap.py --ignore-pool --audio-dir data/raw/nmsqa_squad_test
+```
+
+Apply the 30-second limit and audit category-A coverage:
+
+```bash
+python data/trim_nmsqa_audio_30s.py
+```
+
+Build the natural scale manifest:
+
+```bash
+python data/make_scale_manifest.py
+```
+
+Optionally build the paired Spoken-SQuAD TTS manifest:
+
+```bash
+python data/make_tts_twin_manifest.py
+```
+
+After the four scale runs are complete and
+`scale_nmsqa_responses_20260725.zip` is available, audit A-answer audibility in
+the 30-second audio using the cascade ASR transcripts:
+
+```bash
+python data/check_scale_asr_answers.py
+python data/package_asr_suspects.py
+```
+
+Apply the manual review decisions and freeze the final scale dataset:
+
+```bash
+python data/apply_scale_a_review.py --drop-social-chapter --output data/manifests/scale_nmsqa_final.jsonl
+python data/freeze_scale_dataset.py
+```
+
+Metadata is cached under `data/raw/nmsqa_overlap/`. Results are written to
+`data/nmsqa_overlap_report.json`; the duration plot is written to
+`data/nmsqa_duration_histogram.png`. Add `--force-download` to the final
+command to refresh the metadata.
 
 ## Working rules
 - Every decision → [docs/decisions.md](docs/decisions.md); data-schema changes announced there the same day. Canonical schemas: [docs/en/PLAN.md §2](docs/en/PLAN.md).
