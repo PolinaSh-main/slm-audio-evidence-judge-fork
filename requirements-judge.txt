@@ -2,21 +2,27 @@
 # без аудио/TTS/датасет-генерации из requirements.txt (нужны только инференс-пайплайну
 # M2, судья их не импортирует -- см. grep по import в src/judge*.py/run_eval.py/metrics.py).
 #
-# torch ЯВНО пинован на 2.0.1 -- ту же версию, что и preinstalled в DataSphere в паре с
-# torchvision/torchaudio/torchtext/torchdata (см. их конфликты в pip-логе от 27.07:
-# "torchaudio 2.0.2+cu118 requires torch==2.0.1"). Изначально этот файл торч вообще не
-# упоминал, рассчитывая, что pip не станет трогать уже стоящую версию -- но
-# `pip uninstall torch` (разбор одной из поломок 27.07) снёс единственную копию
-# полностью, и без явного пина accelerate's `torch>=2.0.0` тут же утягивает latest
-# (2.13.0) заново. Явный пин защищает от обоих сценариев разом: если torch уже стоит
-# 2.0.1 -- "Requirement already satisfied", ничего не качается; если стоит другая
-# версия или отсутствует -- ставится ровно 2.0.1, а не latest.
-torch==2.0.1
-huggingface_hub>=0.36.2
-transformers  # без искусственного пола >=5.14.1 из requirements.txt -- тот порог был нужен
-              # только для Gemma-4/Qwen3.5/Qwen3.6 в лестнице кандидатов на Kaggle; здесь
-              # только Qwen3-8B (см. src/judges/local_hf.py), она под преинсталленный
-              # transformers заводится и без него -- пусть pip возьмёт то, что уже есть.
-accelerate    # device_map="auto" в LocalHFJudge
-bitsandbytes  # BitsAndBytesConfig (8-bit по умолчанию) в LocalHFJudge
-rapidfuzz     # fuzzy-сверка категории A + кластеризация в scripts/entropy_baseline.py
+# ВСЁ версионировано намертво (никаких голых имён/>=) -- это финальный пин по факту
+# рабочей связки в DataSphere от 27.07, после нескольких неудачных попыток (полный разбор
+# в docs/decisions.md, если понадобится восстановить контекст):
+#   - системный preinstalled torch (2.0.1+cu118, живёт в ~/.local -- на этом non-root
+#     пользователе нет отдельной "системной" копии для отката) несовместим с transformers,
+#     который требует torch>=2.4;
+#   - GPU-драйвер DataSphere поддерживает CUDA только до 12.2 (см. `nvidia-smi`) -- значит
+#     годится torch под cu121, НЕ под latest/cu130 с обычного PyPI (тот качает секунды,
+#     но `torch.cuda.is_available()` вернёт False -- драйвер слишком старый для рантайма);
+#   - torchaudio/torchvision/torchtext/torchdata/fastai (preinstalled, не наши зависимости)
+#     после апгрейда torch начинают ругаться в pip -- ожидаемо и безвредно: torchaudio
+#     заменяется заглушкой в scripts/judge_setup.ipynb (transformers иначе тянет его
+#     транзитивно и безусловно через loss/loss_rnnt.py -> ParakeetForRNNTLoss, для ASR-
+#     модели, которую мы не используем), остальные три вообще не импортируются судьёй.
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1+cu121
+triton==3.1.0
+huggingface_hub==1.25.1
+transformers==5.14.1  # тот же пол, что в основном requirements.txt -- совпало само,
+                       # без искусственного форсирования
+accelerate==1.14.0    # device_map="auto" в LocalHFJudge
+bitsandbytes==0.50.0  # BitsAndBytesConfig (8-bit по умолчанию) в LocalHFJudge -- нужен
+                       # >=0.46.1 под этот transformers, см. docs/decisions.md
+rapidfuzz==3.14.5     # fuzzy-сверка категории A + кластеризация в scripts/entropy_baseline.py
