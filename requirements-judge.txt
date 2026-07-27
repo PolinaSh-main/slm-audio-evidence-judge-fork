@@ -1,0 +1,19 @@
+# Минимальный набор для LLM-судьи (src/judge.py, src/judges/, src/run_eval.py) --
+# без аудио/TTS/датасет-генерации из requirements.txt (нужны только инференс-пайплайну
+# M2, судья их не импортирует -- см. grep по import в src/judge*.py/run_eval.py/metrics.py).
+#
+# torch намеренно НЕ указан: в DataSphere он уже стоит preinstalled (2.0.1+cu118, есть
+# в паре с torchvision/torchaudio/torchtext/torchdata). Явный `pip install torch` без
+# версии в requirements.txt подтянул последний 2.13.0 с PyPI (долгая закачка, GB CUDA-
+# колёса) и рассинхронизировал версии с этой связкой -- см. ошибки pip от 27.07
+# ("torchaudio 2.0.2+cu118 requires torch==2.0.1, but you have torch 2.13.0"). Если
+# `import torch` в ноутбуке падает -- значит DataSphere реально без него, тогда добавь
+# сюда `torch==2.0.1` (ту же версию, что уже стоит у соседних torch*-пакетов), не latest.
+huggingface_hub>=0.36.2
+transformers  # без искусственного пола >=5.14.1 из requirements.txt -- тот порог был нужен
+              # только для Gemma-4/Qwen3.5/Qwen3.6 в лестнице кандидатов на Kaggle; здесь
+              # только Qwen3-8B (см. src/judges/local_hf.py), она под преинсталленный
+              # transformers заводится и без него -- пусть pip возьмёт то, что уже есть.
+accelerate    # device_map="auto" в LocalHFJudge
+bitsandbytes  # BitsAndBytesConfig (8-bit по умолчанию) в LocalHFJudge
+rapidfuzz     # fuzzy-сверка категории A + кластеризация в scripts/entropy_baseline.py
